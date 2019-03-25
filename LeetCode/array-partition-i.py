@@ -8,3 +8,10 @@ class Solution:
         for i in range(0,length,2):
             sums = sums + nums[i]
         return sums
+
+'''
+class Solution:
+    def arrayPairSum(self, nums: List[int]) -> int:
+        nums.sort()
+        return sum(nums[::2])
+'''
