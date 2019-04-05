@@ -8,7 +8,8 @@ int uniqueMorseRepresentations(char **words, int wordsSize) {
     {
         int length = strlen(words[i]);
         char temp[12] = {0};
-        a[i] = (char *)malloc(sizeof(char)*12);
+        a[i] = (char *)malloc(sizeof(char)*12);//这里分配内存的原因：如果不分配内存，a[i]就使用a[i]=temp，但是这样的话
+                                                //a[i]的值就是指向temp的地址，下次改变temp的值的话a[i]的值也会随之变化
         for(int j=0;j<length;j++)
         {
             strcat(temp, password[words[i][j]-'a']);
