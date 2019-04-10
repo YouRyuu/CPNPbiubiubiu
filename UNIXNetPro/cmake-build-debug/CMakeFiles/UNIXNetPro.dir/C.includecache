@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/youryuu/YL/works/C/UNIXNetPro/lib/unnp.h
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+netinet/in.h
+-
+arpa/inet.h
+-
+sys/socket.h
+-
+unistd.h
+-
+sys/types.h
+-
+errno.h
+-
+signal.h
+-
+sys/un.h
+-
+sys/stat.h
+-
+
+/home/youryuu/YL/works/C/UNIXNetPro/tcp/tcpserver01.c
+../lib/unnp.h
+/home/youryuu/YL/works/C/UNIXNetPro/lib/unnp.h
+

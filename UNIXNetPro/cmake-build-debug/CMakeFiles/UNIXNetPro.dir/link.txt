@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/UNIXNetPro.dir/main.c.o CMakeFiles/UNIXNetPro.dir/lib/sock_ntop.c.o CMakeFiles/UNIXNetPro.dir/tcp/tcpserver01.c.o  -o UNIXNetPro 
