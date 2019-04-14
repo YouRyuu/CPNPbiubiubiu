@@ -1,61 +1,82 @@
 //
 // Created by youryuu on 19-4-7.
-//tcp服务器
+//tcp服务器,select实现
 
 #include "../lib/unnp.h"
 
+//使用client数组实现多客户端并发的服务器
 void tcpserver() {
-    char buff[1024];
-    int listenfd, connfd;
-    pid_t childpid;
+    int i, maxi, maxfd, listenfd, connfd, sockfd;
+    int nready, client[FD_SETSIZE];
+    ssize_t n;
+    fd_set rset, allset;
+    char buff[MAXLINE];
     socklen_t clilen;
     struct sockaddr_in cliaddr, serveraddr;
-    if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("socket fail");
-        exit(0);
-    }
-    memset(&serveraddr, 0, sizeof(serveraddr));
+    listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+    bzero(&serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serveraddr.sin_port = htons(SEVE_PORT);
-    if (bind(listenfd, (SA *) &serveraddr, sizeof(serveraddr))) {
-        printf("bind error");
-        exit(0);
+    Bind(listenfd, (SA *) &serveraddr, sizeof(serveraddr));
+
+    Listen(listenfd, LISTENQ);
+    maxfd = listenfd;   //初始化
+    maxi = -1;      //client数组的索引
+    for (i = 0; i < FD_SETSIZE; i++)
+        client[i] = -1;     //初始化,-1代表没有客户端连接
+    FD_ZERO(&allset);
+    FD_SET(listenfd, &allset);
+    for (;;) {
+        rset = allset;
+        nready = Select(maxfd+1, &rset, NULL, NULL, NULL);
+        if(FD_ISSET(listenfd, &rset))   //新客户端连接进来
+        {
+            clilen = sizeof(cliaddr);
+            connfd = Accept(listenfd, (SA *) &cliaddr, &clilen);
+            for (i = 0; i < FD_SETSIZE; i++) {
+                if (client[i] < 0) {
+                    client[i] = connfd;
+                    break;
+                }
+            }
+            if (i == FD_SETSIZE)
+                err_quit("客户连接已满");
+            FD_SET(connfd, &allset);
+            if (connfd > maxfd)
+                maxfd = connfd;
+            if (i > maxi)
+                maxi = i;
+            if (--nready <= 0)       //select中没有更多的可读描述符
+                continue;
+        }
+
+        for(i=0; i<=maxi;i++)
+        {
+            if((sockfd = client[i]) < 0)
+                continue;       //寻找客户端
+            if(FD_ISSET(sockfd, &rset))     //收到了客户端的消息
+            {
+                if((n = Read(sockfd, buff, MAXLINE)) == 0)
+                {
+                    // 客户退出
+                    Close(sockfd);
+                    FD_CLR(sockfd, &allset);
+                    client[i] = -1;
+                } else {
+                    printf("server:----%s-----\n", buff);
+                    Writen(sockfd, buff, n);
+                }
+                if(--nready <= 0)
+                    break;
+            }
+        }
     }
-    if (listen(listenfd, LISTENQ)) {
-        printf("listen error");
-        exit(0);
-    }
-    //for (;;) {
-    ssize_t n;
-    clilen = sizeof(cliaddr);
-    if ((connfd = accept(listenfd, (SA *) &cliaddr, &clilen)) < 0) {
-        printf("accept error");
-        exit(0);
-    }
-    printf("connection from:%s, port:%d\n", inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff)),
-           ntohs(cliaddr.sin_port));
-    memset(buff, 0, sizeof(buff));
-    //while ((n = read(connfd, buff, 1024)) > 0) {
-    char status[] = "HTTP/1.0 200 OK\r\n";
-    char header[] = "Server: DWBServer\r\nContent-Type: text/html;charset=utf-8\r\n\r\n";
-    char body[] = "<html><head><title>C语言构建小型Web服务器</title></head><body><h2>欢迎</h2><p>Hello，World</p></body></html>";
-    read(connfd, buff, 1024);
-    printf("client say:%s\n", buff);
-    //snprintf(buff, sizeof(buff), "%s", "server recv succ");
-    write(connfd, status, strlen(status));
-    write(connfd, header, sizeof(header));
-    write(connfd, body, strlen(body));
-    //memset(buff, 0, sizeof(buff));
-    //}
-    close(connfd);
-    close(listenfd);
-    //}
 }
 
-void main() {
-    tcpserver();
-}
+//void main() {
+//    tcpserver();
+//}
 
 
 
