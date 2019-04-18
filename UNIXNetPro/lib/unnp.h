@@ -46,4 +46,5 @@ void Listen(int fd, int backlog);
 int Select(int fd, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 int Accept(int fd, struct sockaddr *sa, socklen_t *salenptr);
 void Close(int fd);
-
+void udp_str(int sockfd, SA *pcliaddr, socklen_t clilen);
+void udp_cli_str(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen);
