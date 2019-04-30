@@ -13,3 +13,18 @@ int rob(int* nums, int numsSize){
     return res;
 }
 
+
+
+///////
+class Solution(object):
+    def rob(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        last = 0 
+        now = 0
+        for i in nums: 
+            #其实就是一个奇数和偶数位元素求和，哪个更大么？
+            last, now = now, max(last + i, now)
+        return now
