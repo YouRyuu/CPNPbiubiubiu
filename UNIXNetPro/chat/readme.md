@@ -58,3 +58,9 @@ typedef struct msgBody{     //定义消息体
     }
     type=4, senderid=10000, recverid=clientid, content="获取好友列表", friendsid=好友id, frientsname=好友昵称  一一对应
     ```
+# 数据库设计
+* 用户表
+* 在线用户表
+* 消息记录表
+* 用户登录记录表
+* 用户好友关系表
