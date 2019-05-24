@@ -1,4 +1,5 @@
 #include<iostream>
+#include <algorithm>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,6 +16,7 @@
 #include <sys/poll.h>
 #include <sys/time.h>
 #include <limits.h>
+using namespace std;
 
 #define SERVERPORT 6666     //端口号
 #define LISTENQ 1024        //监听队列长度

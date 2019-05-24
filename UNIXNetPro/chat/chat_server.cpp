@@ -3,6 +3,8 @@
  * 使用poll
  */
 
+//传数据时会出现传两次,未解决
+
 #include "hchat.h"
 
 void msgHandler(msgHeader* msg, int sockfd, char *buff);
@@ -39,6 +41,7 @@ void tcpserver_init()
         {
             clilen = sizeof(clientaddr);
             connfd = Accept(listenfd, (SA *)&clientaddr, &clilen);
+            cout << "新客户到来" <<endl;
             for(i=1;i<FOPEN_MAX;++i)
             {
                 if(client[i].fd < 0)
@@ -61,6 +64,7 @@ void tcpserver_init()
                 continue;
             if(client[i].revents & (POLLRDNORM | POLLERR))
             {
+                cout << i << ":" << client[i].revents <<endl;
                 if((n = read(sockfd, buff, MAXLEN)) < 0)
                 {
                     if(errno == ECONNRESET)
@@ -81,6 +85,7 @@ void tcpserver_init()
                 else    //处理客户端发过来的字符
                 {
                     msgHandler((msgHeader *)buff, sockfd, buff);
+                    cout << nready <<endl;
                 }
                 if(--nready<=0)
                     break;
@@ -91,27 +96,51 @@ void tcpserver_init()
 
 void msgHandler(msgHeader* msg, int sockfd, char *buff)
 {
+    cout << "客户端发来消息:";
     switch (msg->type)
     {
     case MSG_LOGIN:     // 登录选项
+    {
         /* code */
-        if(msg->sender==10000 && !strcmp(msg->content, "123456"))
+        if(msg->sender==10000 && !strcmp(msg->content, "123456\n"))
         {
             printf("用户%d登录成功\n", msg->sender);
-            msgHeader *rpmsg = (msgHeader *)calloc(1,sizeof(msgHeader));
+            msgHeader *rpmsg = (msgHeader *)calloc(sizeof(msgHeader),1);
             rpmsg->type = LOGIN_SUCC;        //登录成功
             rpmsg->sender = 10000;
             rpmsg->recver = msg->sender;
-            strcpy(rpmsg->content, "登录成功");
+            strcpy(rpmsg->content, "登录成功\n");
             char *rpmsgString = (char *)calloc(sizeof(msgHeader), 1);
             memcpy(rpmsgString, rpmsg, sizeof(msgHeader));
             if(write(sockfd, rpmsgString, sizeof(msgHeader))<0)
             {
+                free(rpmsg);
+                free(rpmsgString);
                 err_throw("write error");
             }
+            free(rpmsg);
+            free(rpmsgString);
+        }
+        else
+        {
+            msgHeader *rpmsg = (msgHeader *)calloc(1,sizeof(msgHeader));
+            rpmsg->type = 9;        //登录失败
+            rpmsg->sender = 10000;
+            rpmsg->recver = msg->sender;
+            strcpy(rpmsg->content, "用户名或密码错误\n");
+            char *rpmsgString = (char *)calloc(sizeof(msgHeader), 1);
+            memcpy(rpmsgString, rpmsg, sizeof(msgHeader));
+            if(write(sockfd, rpmsgString, sizeof(msgHeader))<0)
+            {
+                free(rpmsg);
+                free(rpmsgString);
+                err_throw("write error");
+            }
+            free(rpmsg);
+            free(rpmsgString);
         }
         break;
-    
+    }
     default:
         break;
     }
