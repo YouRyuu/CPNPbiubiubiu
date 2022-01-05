@@ -10,7 +10,7 @@ public:
         int maxlen = 0;
         int currlen=0;      //记录当前不重复的串长度
         int dis;
-        for(int i=0;i<s.size();i++)
+        for(int i=0;i<s.size();i++)//这里可以直接改成int i=0,不需要这层for循环
         {
             for(int j=i+1;j<s.size();j++)
             {
