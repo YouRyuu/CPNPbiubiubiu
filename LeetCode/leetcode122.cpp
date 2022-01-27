@@ -11,4 +11,27 @@ public:
         return dp[n - 1][0];
     }
 };
+//我的解法
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int size = prices.size();
+        if(size==1) return 0;
+        int sumValue=0, currValue=0,minValue=prices[0];
+        for(int i=1;i<size;++i)
+        {
+            if(prices[i]<prices[i-1])
+            {
+                sumValue += currValue;
+                minValue = prices[i];
+                currValue = 0;
+            }
+            else
+            {
+                currValue = currValue + prices[i] - prices[i-1];
+            }
+        }
+        return sumValue + currValue;
 
+    }
+};
