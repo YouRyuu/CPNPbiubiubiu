@@ -169,5 +169,144 @@ int main()
 	return 0;
 }
 ```  
-g++ main.cpp 时运行输出weak  
-g++ main.cpp file.cpp 时输出strong
+- g++ main.cpp 时运行输出weak  
+- g++ main.cpp file.cpp 时输出strong  
+  
+7.虚函数作为接口时产生的二进制不兼容和虚函数表初探  
+- file.h
+```
+
+class Father
+{
+    public:
+        virtual void funLint(double a) = 0;//后增加
+        virtual void funLint(int a) = 0;
+        virtual void funLint(char a) = 0;
+        virtual void funRint(double a) = 0;//后增加
+        virtual void funRint(int a) = 0;
+        virtual void funRint(char a) = 0;
+        virtual void funAint(double a) = 0;//后增加
+        virtual void funAint(int a) = 0;
+        virtual void funAint(char a) = 0;
+        virtual ~Father() = 0;
+};
+
+Father::~Father() { }
+
+class Child1:public Father
+{
+    public:
+        void funLint(double a) override;//后增加
+        void funLint(int a) override;
+        void funLint(char a) override;
+        void funRint(double a) override;//后增加
+        void funRint(int a) override;
+        void funRint(char a) override;
+        void funAint(double a) override;//后增加
+        void funAint(int a) override;
+        void funAint(char a) override;
+        ~Child1() override;
+};
+```  
+- file.cpp  
+```
+#include <iostream>
+#include "file.h"
+
+void Child1::funLint(double a)//后增加
+{
+    std::cout<<"child1 funLdouble"<<std::endl;
+}
+
+void Child1::funLint(int a)
+{
+    std::cout<<"child1 funLint"<<std::endl;
+}
+
+void Child1::funLint(char a)
+{
+    std::cout<<"child1 funLchar"<<std::endl;
+}
+
+void Child1::funRint(double a)//后增加
+{
+    std::cout<<"child1 funRdouble"<<std::endl;
+}
+
+void Child1::funRint(int a)
+{
+    std::cout<<"child1 funRint"<<std::endl;
+}
+
+void Child1::funRint(char a)
+{
+    std::cout<<"child1 funRchar"<<std::endl;
+}
+
+void Child1::funAint(double a)//后增加
+{
+    std::cout<<"child1 funAdouble"<<std::endl;
+}
+
+void Child1::funAint(int a)
+{
+    std::cout<<"child1 funAint"<<std::endl;
+}
+
+void Child1::funAint(char a)
+{
+    std::cout<<"child1 funAchar"<<std::endl;
+}
+
+Child1::~Child1()
+{
+    std::cout<<"~child1"<<std::endl;
+}
+```  
+- main.cpp
+```
+#include "file.h"
+#include <iostream>
+
+int main()
+{
+    std::cout<<sizeof(Father)<<std::endl;// pvptr大小：8
+
+    typedef void(*func)(void);
+    Father* f = new Child1;
+    f->funAint(1);  //测试二进制兼容
+    //以下测试虚函数表
+    long* pvptr = (long*)f;
+    long* vptr = (long*)*pvptr;
+    func func1 = (func)vptr[0];
+    func func2 = (func)vptr[8];
+    func1();
+    func2();
+    delete f;
+	return 0;
+}
+```
+在以上代码中，先把后增加之前的file.cpp编译成动态链接库
+```
+g++ -fPIC -shared file.cpp -o libfile.so -std=c++11
+```
+而后编译main.cpp使用该库
+```
+g++ -o test main.cpp -l file -L . -std=c++11
+```
+在修改file.*之前运行正常，输出：
+```
+$ ./test                                             
+child1 funAint
+~child1
+```
+然而在修改了file.*之后，输出错误
+```
+$ ./test
+child1 funRint
+child1 funAint
+```
+其本质原因就是c++以vtable[offset]的方式实现虚函数调用，而offset又是根据虚函数声明的位置隐式确定的，增加几行代码之后造成offset的排列发生了变化，现有的二进制文件无法再用旧的offset调用到正确的函数[^1]  
+
+[^1]: Linux多线程服务端编程，p440
+
