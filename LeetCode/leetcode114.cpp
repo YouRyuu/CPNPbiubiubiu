@@ -37,3 +37,23 @@ public:
         }
     }
 };
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        TreeNode *curr = root;
+        while(curr!=nullptr)
+        {
+            if(curr->left!=nullptr)
+            {
+                TreeNode *next = curr->left;
+                TreeNode *pre = next;
+                while(pre->right!=nullptr)
+                    pre = pre->right;
+                pre->right = curr->right;
+                curr->left = nullptr;
+                curr->right = next;
+            }
+            curr = curr->right;
+        }
+    }
+};
