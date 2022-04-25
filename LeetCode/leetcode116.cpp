@@ -44,3 +44,25 @@ public:
         return root;
     }
 };
+//O(1)方法
+class Solution {
+public:
+    Node* connect(Node* root) {
+        if(root==NULL)
+            return NULL;
+        Node *leftNode = root;
+        while(leftNode->left!=NULL)
+        {
+            Node *head = leftNode;
+            while(head!=NULL)
+            {
+                head->left->next = head->right;
+                if(head->next!=NULL)
+                    head->right->next = head->next->left;
+                head=head->next;
+            }
+            leftNode = leftNode->left;
+        }
+        return root;
+    }
+};
