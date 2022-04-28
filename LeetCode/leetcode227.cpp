@@ -2,7 +2,7 @@ class Solution {
 public:
     bool isDigit(char c)
     {
-        if(c!='+' && c!='-' && c!='*' && c!='/')
+        if(c!='+' && c!='-' && c!='*' && c!='/' && c!=' ')
             return true;
         return false;
     }
