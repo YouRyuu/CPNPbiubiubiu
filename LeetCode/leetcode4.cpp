@@ -54,3 +54,30 @@ public:
         }
     }
 };
+
+//第2中解法O(m+n)
+double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        int m = nums1.size();
+        int n = nums2.size();
+        int len = m + n;
+        double L=-1, R=-1;
+        int indexa=0, indexb=0;
+        for(int i=0; i<=len/2; ++i)
+        {
+            L = R;
+            if(indexa<m && (indexb>=n || nums1[indexa] < nums2[indexb]))
+            {
+                R = nums1[indexa];
+                ++indexa;
+            }
+            else
+            {
+                R = nums2[indexb];
+                ++indexb;
+            }
+        }
+        if(len%2==0)
+            return (L+R)/2;
+        else
+            return R;
+    }
