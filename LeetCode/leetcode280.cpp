@@ -20,3 +20,17 @@ public:
         nums.swap(v);
     }
 };
+
+class Solution {
+public:
+    void wiggleSort(vector<int>& nums) {
+        int len = nums.size();
+        for(int i=0; i<len-1; ++i)
+        {
+            if((i%2==0)!=(nums[i] < nums[i+1]))
+            {
+                swap(nums[i], nums[i+1]);
+            }
+        }
+    }
+};
