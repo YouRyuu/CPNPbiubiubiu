@@ -45,4 +45,38 @@ public:
         }
         return s.substr(begin, maxLen);
     }
+}
+;
+class Solution {
+public:
+    pair<int, int> exp(string &s, int L, int R)
+    {
+        while(L>=0 && R<s.size() && s[L]==s[R])
+        {
+            --L;
+            ++R;
+        }
+        return {L+1, R-1};
+    }
+
+    string longestPalindrome(string s) {
+        int len = s.size();
+        int start = 0, end = 0;
+        for(int i=0; i<len; ++i)
+        {
+            pair<int, int> exp1 = exp(s, i, i);
+            pair<int, int> exp2 = exp(s, i, i+1);
+            if((exp1.second-exp1.first) > (end - start))
+            {
+                end = exp1.second;
+                start = exp1.first;
+            }
+            if((exp2.second - exp2.first) > (end - start))
+            {
+                end = exp2.second;
+                start = exp2.first;
+            }
+        }
+        return s.substr(start, end-start+1);
+    }
 };
